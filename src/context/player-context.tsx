@@ -1,56 +1,62 @@
-import { PropsWithChildren, createContext } from "react";
+import { PropsWithChildren, createContext, useState, useEffect } from "react";
 import { Synthesizer } from "../modules/synthesizer";
 import { loadBinaryFromFile, loadBinaryFromURL } from "../utils/file.utils";
 import useSynthesizer from "../hooks/useSynthesizer";
 import { Midi } from "../data/midis";
 import { SoundFont } from "../data/soundfonts";
 
-export class Player {
-  private readonly synthesizer: Synthesizer;
-  private lastFontLoaded: number;
-  private currentMidi: Midi | null;
-  private currentFont: SoundFont | null;
+export function usePlayer(synthesizer: Synthesizer) {
+  const [lastFontLoaded, setLastFontLoaded] = useState(-1);
+  const [currentMidi, setCurrentMidi] = useState<{
+    midi: Midi;
+    buffer: ArrayBuffer;
+  }>();
+  const [currentFont, setCurrentFont] = useState<SoundFont>();
 
-  constructor(synthesizer: Synthesizer | null) {
-    this.synthesizer = synthesizer as Synthesizer;
-    this.lastFontLoaded = -1;
-    this.currentMidi = null;
-    this.currentFont = null;
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  // If midi and font change well stop and reset player
+  useEffect(() => {
+    stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentMidi, currentFont]);
+
+  // Check if player stopped to reload player using stop function
+  useEffect(() => {
+    !isPlaying && stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPlaying]);
+
+  function getMidi() {
+    return currentMidi?.midi;
   }
 
-  public getMidi() {
-    return this.currentMidi;
+  function getSoundFont() {
+    return currentFont;
   }
 
-  public getSoundFont() {
-    return this.currentFont;
+  function isFontLoaded() {
+    return lastFontLoaded !== -1;
   }
 
-  public isFontLoaded() {
-    return this.lastFontLoaded !== -1;
+  function isSongLoaded() {
+    return currentMidi?.midi != null;
   }
 
-  public isSongLoaded() {
-    return this.currentMidi != null;
+  function getPosition(): Promise<number> {
+    return synthesizer.retrievePlayerCurrentTick();
   }
 
-  public getPosition(): Promise<number> {
-    return this.synthesizer.retrievePlayerCurrentTick();
+  async function loadMidi(buffer: ArrayBuffer, midi: Midi) {
+    await synthesizer.addSMFDataToPlayer(buffer);
+
+    setCurrentMidi({ midi, buffer });
   }
 
-  public isPlaying() {
-    return this.synthesizer.isPlaying();
-  }
-
-  public async loadMidi(buffer: ArrayBuffer, midi: Midi) {
-    await this.synthesizer.addSMFDataToPlayer(buffer);
-    this.currentMidi = midi;
-  }
-
-  public async loadMidiFile(midi: File) {
+  async function loadMidiFile(midi: File) {
     const buffer = await loadBinaryFromFile(midi);
     if (buffer) {
-      await this.loadMidi(buffer, {
+      await loadMidi(buffer, {
         author: "unknown",
         url: "file",
         name: midi.name,
@@ -58,70 +64,94 @@ export class Player {
     }
   }
 
-  public async loadMidiURL(midi: Midi) {
+  async function loadMidiURL(midi: Midi) {
     const buffer = await loadBinaryFromURL(midi.url);
     if (buffer) {
-      await this.loadMidi(buffer, midi);
+      await loadMidi(buffer, midi);
     }
   }
 
-  public async loadSoundfont(buffer: ArrayBuffer, soundfont: SoundFont) {
-    if (this.lastFontLoaded !== -1) {
-      await this.synthesizer.unloadSFontAsync(this.lastFontLoaded);
+  async function loadSoundfont(buffer: ArrayBuffer, soundfont: SoundFont) {
+    if (lastFontLoaded !== -1) {
+      await synthesizer.unloadSFontAsync(lastFontLoaded);
     }
 
-    this.lastFontLoaded = await this.synthesizer.loadSFont(buffer);
-    this.currentFont = soundfont;
+    const font = await synthesizer.loadSFont(buffer);
+    setLastFontLoaded(font);
+    setCurrentFont(soundfont);
   }
 
-  public async loadSoundfontFile(midi: File) {
+  async function loadSoundfontFile(midi: File) {
     const buffer = await loadBinaryFromFile(midi);
     if (buffer) {
-      await this.loadSoundfont(buffer, {
+      await loadSoundfont(buffer, {
         url: "file",
         name: midi.name,
       });
     }
   }
 
-  public async loadSoundfontURL(font: SoundFont) {
+  async function loadSoundfontURL(font: SoundFont) {
     const buffer = await loadBinaryFromURL(font.url);
     if (buffer) {
-      await this.loadSoundfont(buffer, font);
+      await loadSoundfont(buffer, font);
     }
   }
 
-  public async play() {
-    await this.synthesizer.playPlayer();
-    await this.synthesizer.waitForPlayerStopped();
-    await this.synthesizer.waitForVoicesStopped();
-    await this.synthesizer.resetPlayer();
+  async function play() {
+    await synthesizer.playPlayer();
+
+    setIsPlaying(true);
+
+    await synthesizer.waitForPlayerStopped();
+    await synthesizer.waitForVoicesStopped();
+
+    setIsPlaying(false);
   }
 
-  public setPosition(ticks: number) {
-    this.synthesizer.seekPlayer(ticks);
+  function setPosition(ticks: number) {
+    synthesizer.seekPlayer(ticks);
   }
 
-  public async stop() {
-    if (this.isPlaying()) {
-      this.synthesizer.stopPlayer();
-    }
-    await this.synthesizer.resetPlayer();
+  async function stop() {
+    await synthesizer.resetPlayer();
+
+    console.log({ currentMidi });
+
+    currentMidi?.buffer &&
+      (await synthesizer.addSMFDataToPlayer(currentMidi.buffer));
+
+    setIsPlaying(false);
   }
+
+  return {
+    getMidi,
+    getSoundFont,
+    isFontLoaded,
+    isSongLoaded,
+    getPosition,
+    isPlaying,
+    loadMidi,
+    loadMidiFile,
+    loadMidiURL,
+    loadSoundfont,
+    loadSoundfontFile,
+    loadSoundfontURL,
+    play,
+    setPosition,
+    stop,
+  };
 }
 
-export const PlayerContext = createContext<{
-  player: Player;
-}>({
-  player: new Player(null),
-});
+export const PlayerContext = createContext<any>(null) as React.Context<
+  ReturnType<typeof usePlayer>
+>;
 
 export const PlayerProvider = ({ children }: PropsWithChildren) => {
   const { synthesizer } = useSynthesizer();
-  const player = new Player(synthesizer as Synthesizer);
 
   return (
-    <PlayerContext.Provider value={{ player }}>
+    <PlayerContext.Provider value={usePlayer(synthesizer as Synthesizer)}>
       {children}
     </PlayerContext.Provider>
   );

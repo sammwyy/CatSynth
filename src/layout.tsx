@@ -78,7 +78,7 @@ function ModalSelectItem({ value, onClick }: ModalSelectItemProps) {
 }
 
 function FontModal({ isOpen, onClose }: ModalProps) {
-  const { player } = usePlayer();
+  const player = usePlayer();
 
   return (
     <GenericModal isOpen={isOpen} onClose={onClose} title={"Select SoundFont"}>
@@ -97,7 +97,7 @@ function FontModal({ isOpen, onClose }: ModalProps) {
 }
 
 function MidiModal({ isOpen, onClose }: ModalProps) {
-  const { player } = usePlayer();
+  const player = usePlayer();
 
   return (
     <GenericModal isOpen={isOpen} onClose={onClose} title={"Select Midi"}>
@@ -139,7 +139,7 @@ function MidiModal({ isOpen, onClose }: ModalProps) {
 export default function Layout() {
   const fontModal = useDisclosure();
   const midiModal = useDisclosure();
-  const { player } = usePlayer();
+  const player = usePlayer();
   const [auxUpdate, setAuxUpdate] = useState(0);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
