@@ -62,6 +62,11 @@ const midis: Midi[] = [
     url: "/midis/linkin_park_in_the_end.mid",
   },
   {
+    author: "Plants Vs Zombies",
+    name: "Graze The Roof",
+    url: "/midis/pvz_graze_the_roof.mid",
+  },
+  {
     author: "Marshmello",
     name: "Alone",
     url: "/midis/marshmello_alone.mid",
