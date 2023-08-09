@@ -82,6 +82,27 @@ function FontModal({ isOpen, onClose }: ModalProps) {
 
   return (
     <GenericModal isOpen={isOpen} onClose={onClose} title={"Select SoundFont"}>
+      <ModalSelectItem
+        value={{
+          author: "Local",
+          name: "Upload a Soundfont",
+          url: "",
+        }}
+        onClick={async () => {
+          const input = document.createElement("input");
+          input.type = "file";
+          input.onchange = async (_) => {
+            const file = input.files ? input.files[0] : null;
+            if (file) {
+              await player.loadSoundfontFile(file);
+            }
+            input.remove();
+            onClose();
+          };
+          input.click();
+        }}
+      />
+
       {soundfonts.map((soundfont, index) => (
         <ModalSelectItem
           value={soundfont}
