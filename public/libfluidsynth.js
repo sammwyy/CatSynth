@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
-/* eslint-disable no-unused-expressions */
 /* eslint-disable no-restricted-globals */
+/* eslint-disable no-unused-expressions */
 var Module = typeof Module != "undefined" ? Module : {};
 var document = typeof document !== "undefined" ? document : {};
 var window = typeof window !== "undefined" ? window : {};

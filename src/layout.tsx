@@ -1,28 +1,31 @@
 import {
   Box,
+  Flex,
   Heading,
-  Text,
+  Image,
+  Link,
   Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
   ModalBody,
   ModalCloseButton,
-  useDisclosure,
+  ModalContent,
   ModalFooter,
-  Flex,
-  Image,
+  ModalHeader,
+  ModalOverlay,
+  Text,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { PropsWithChildren, useEffect, useState } from "react";
+import { Branding } from "./components/branding/branding";
 
-import soundfonts, { SoundFont } from "./data/soundfonts";
-import midis, { Midi } from "./data/midis";
-
-import Cat from "./components/cat";
 import Container from "./components/container";
 import Player from "./components/player";
 import Side from "./components/side";
+import useData from "./hooks/useData";
+import useMobile from "./hooks/useMobile";
 import usePlayer from "./hooks/usePlayer";
+import Midi from "./interfaces/midi";
+import SoundFont from "./interfaces/soundfont";
+import { getCDNPathOrNull } from "./utils/constants.utils";
 
 interface ModalProps {
   isOpen: boolean;
@@ -56,6 +59,7 @@ interface ModalSelectItemProps {
 
 function ModalSelectItem({ value, onClick }: ModalSelectItemProps) {
   const asMidi = value as Midi;
+  const icon = getCDNPathOrNull(value.icon);
 
   return (
     <Flex
@@ -64,7 +68,16 @@ function ModalSelectItem({ value, onClick }: ModalSelectItemProps) {
       cursor={"pointer"}
       onClick={onClick}
     >
-      <Image src={value.icon} mr={"4px"} />
+      {icon != null && (
+        <Image
+          src={icon}
+          mr={"4px"}
+          height={"100%"}
+          width={"100%"}
+          maxWidth={"50px"}
+        />
+      )}
+
       <Box>
         <Text fontSize={"18px"} fontWeight={"bold"} color={"white"}>
           {value.name}
@@ -79,22 +92,24 @@ function ModalSelectItem({ value, onClick }: ModalSelectItemProps) {
 
 function FontModal({ isOpen, onClose }: ModalProps) {
   const player = usePlayer();
+  const { soundfonts } = useData();
 
   return (
     <GenericModal isOpen={isOpen} onClose={onClose} title={"Select SoundFont"}>
       <ModalSelectItem
         value={{
-          author: "Local",
+          author: "Click here to upload a .sf2 file",
           name: "Upload a Soundfont",
           url: "",
         }}
         onClick={async () => {
           const input = document.createElement("input");
           input.type = "file";
+          input.accept = ".sf2";
           input.onchange = async (_) => {
             const file = input.files ? input.files[0] : null;
             if (file) {
-              await player.loadSoundfontFile(file);
+              await player.loadSoundFont(file);
             }
             input.remove();
             onClose();
@@ -103,12 +118,14 @@ function FontModal({ isOpen, onClose }: ModalProps) {
         }}
       />
 
+      <hr style={{ marginBottom: "20px" }} />
+
       {soundfonts.map((soundfont, index) => (
         <ModalSelectItem
           value={soundfont}
           key={index}
           onClick={async () => {
-            await player.loadSoundfontURL(soundfont);
+            await player.loadSoundFont(soundfont);
             onClose();
           }}
         />
@@ -119,22 +136,24 @@ function FontModal({ isOpen, onClose }: ModalProps) {
 
 function MidiModal({ isOpen, onClose }: ModalProps) {
   const player = usePlayer();
+  const { midis } = useData();
 
   return (
     <GenericModal isOpen={isOpen} onClose={onClose} title={"Select Midi"}>
       <ModalSelectItem
         value={{
-          author: "Local",
+          author: "Click here to upload a .mid or .midi file",
           name: "Upload a file",
           url: "",
         }}
         onClick={async () => {
           const input = document.createElement("input");
           input.type = "file";
+          input.accept = ".mid,.midi";
           input.onchange = async (_) => {
             const file = input.files ? input.files[0] : null;
             if (file) {
-              await player.loadMidiFile(file);
+              await player.loadMidi(file);
             }
             input.remove();
             onClose();
@@ -143,12 +162,14 @@ function MidiModal({ isOpen, onClose }: ModalProps) {
         }}
       />
 
+      <hr style={{ marginBottom: "20px" }} />
+
       {midis.map((midi, index) => (
         <ModalSelectItem
           value={midi}
           key={index}
           onClick={async () => {
-            await player.loadMidiURL(midi);
+            await player.loadMidi(midi);
             onClose();
           }}
         />
@@ -158,6 +179,7 @@ function MidiModal({ isOpen, onClose }: ModalProps) {
 }
 
 export default function Layout() {
+  const isMobile = useMobile();
   const fontModal = useDisclosure();
   const midiModal = useDisclosure();
   const player = usePlayer();
@@ -176,34 +198,84 @@ export default function Layout() {
   }, [midiModal.isOpen, fontModal.isOpen]);
 
   return (
-    <Container>
-      <Side onClick={fontModal.onOpen}>
-        <Box textAlign={"center"}>
-          <Heading>
-            {player.isFontLoaded()
-              ? player.getSoundFont()?.name
-              : "NO SELECTED FONT"}
-          </Heading>
-          <Text>Click to explore or upload</Text>
-        </Box>
-      </Side>
-
-      <Player />
-      <Cat />
-
+    <>
       <FontModal isOpen={fontModal.isOpen} onClose={fontModal.onClose} />
       <MidiModal isOpen={midiModal.isOpen} onClose={midiModal.onClose} />
 
-      <Side onClick={midiModal.onOpen}>
-        <Box textAlign={"center"}>
-          <Heading>
-            {player.isSongLoaded()
-              ? player.getMidi()?.name
-              : "NO SELECTED MIDI"}
-          </Heading>
-          <Text>Click to explore or upload</Text>
-        </Box>
-      </Side>
-    </Container>
+      <Container>
+        {/* Branding and Player */}
+        <Flex flexDir={"column"} alignItems={"center"} gap={"20px"}>
+          <Branding />
+
+          {isMobile && <Player />}
+        </Flex>
+
+        {/* Selector */}
+        <Flex alignItems={"center"} justifyContent={"center"}>
+          <Side onClick={fontModal.onOpen}>
+            {player.soundFont != null && (
+              <Image
+                alt={"SoundFont Cover"}
+                width={"100%"}
+                height={"100%"}
+                maxWidth={isMobile ? "150px" : "300px"}
+                maxHeight={isMobile ? "150px" : "300px"}
+                src={
+                  getCDNPathOrNull(player.soundFont?.icon) ||
+                  "/default_sf_cover.png"
+                }
+              />
+            )}
+
+            <Heading>
+              {player.soundFont ? player.soundFont.name : "NO SELECTED FONT"}
+            </Heading>
+            <Text>Click to explore or upload</Text>
+          </Side>
+
+          {!isMobile && (
+            <Side vAlign="center">
+              <Player />
+            </Side>
+          )}
+
+          <Side onClick={midiModal.onOpen}>
+            {player.midi != null && (
+              <Image
+                alt={"Midi Cover"}
+                width={"100%"}
+                height={"100%"}
+                maxWidth={isMobile ? "150px" : "300px"}
+                maxHeight={isMobile ? "150px" : "300px"}
+                src={
+                  getCDNPathOrNull(player.midi?.midi.icon) ||
+                  "/default_midi_cover.png"
+                }
+              />
+            )}
+
+            <Heading>
+              {player.midi ? player.midi.midi.name : "NO SELECTED MIDI"}
+            </Heading>
+            <Text>Click to explore or upload</Text>
+          </Side>
+        </Flex>
+
+        {/* Footer */}
+        <Flex
+          justifyContent={"center"}
+          gap={"20px"}
+          textDecoration={"underline"}
+          letterSpacing={"2px"}
+        >
+          <Link href={"https://ko-fi.com/sammwy"} isExternal>
+            Donate
+          </Link>
+          <Link href={"https://github.com/sammwyy/catsynth"} isExternal>
+            GitHub
+          </Link>
+        </Flex>
+      </Container>
+    </>
   );
 }

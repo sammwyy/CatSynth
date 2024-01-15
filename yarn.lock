@@ -7136,6 +7136,11 @@ js-sdsl@^4.1.4:
   resolved "https://registry.yarnpkg.com/js-sdsl/-/js-sdsl-4.3.0.tgz#aeefe32a451f7af88425b11fdb5f58c90ae1d711"
   integrity sha512-mifzlm2+5nZ+lEcLJMoBK0/IH/bDg8XnJfd/Wq6IP+xoCjLZsTOnV2QpxlVbX9bMnkl5PdEjNtBJ9Cj1NjifhQ==
 
+js-synthesizer@^1.10.0:
+  version "1.10.0"
+  resolved "https://registry.yarnpkg.com/js-synthesizer/-/js-synthesizer-1.10.0.tgz#b13fd5589697cd4f8a3bea221586e9c5919e3bf7"
+  integrity sha512-OR8j8QcWgAPvVcJ8LOtCx3Ypdm7lfyumYGQmxLUWIpZmnpzoUlb/HDYagHMv79je1D/rS6mEkq27F48MS87LMw==
+
 "js-tokens@^3.0.0 || ^4.0.0", js-tokens@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-4.0.0.tgz#19203fb59991df98e3a287050d4647cdeaf32499"
@@ -8837,6 +8842,11 @@ react-focus-lock@^2.9.2:
     react-clientside-effect "^1.2.6"
     use-callback-ref "^1.3.0"
     use-sidecar "^1.1.2"
+
+react-icons@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/react-icons/-/react-icons-5.0.1.tgz#1694e11bfa2a2888cab47dcc30154ce90485feee"
+  integrity sha512-WqLZJ4bLzlhmsvme6iFdgO8gfZP17rfjYEJ2m9RsZjZ+cc4k1hTzknEz63YS1MeT50kVzoa1Nz36f4BEx+Wigw==
 
 react-is@^16.13.1, react-is@^16.7.0:
   version "16.13.1"

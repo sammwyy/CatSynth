@@ -1,10 +1,8 @@
+import { OrbitControls, useTexture } from "@react-three/drei";
+import { Canvas, useLoader } from "@react-three/fiber";
 import { useEffect } from "react";
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
-import { useLoader } from "@react-three/fiber";
+import { Euler, Vector3 } from "three";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
-import { useTexture } from "@react-three/drei";
-import { Vector3 } from "three";
 
 function Cat3DModel() {
   const model = useLoader(FBXLoader, "/cat.fbx");
@@ -17,16 +15,17 @@ function Cat3DModel() {
       const move = new Vector3();
       move.x = x;
       move.y = y;
-      move.z = 5;
-      model.lookAt(move);
+      move.z = 10;
+      // model.lookAt(move);
+      model.rotateOnAxis(new Vector3(x, y, 0), Math.PI);
     });
   }, [model]);
 
   return (
-    <mesh scale={0.035}>
+    <mesh scale={1}>
       <primitive object={model} />
 
-      <ambientLight intensity={0.2} />
+      <ambientLight intensity={0.3} />
       <directionalLight />
       <meshStandardMaterial displacementScale={0.2} map={texture} />
       <OrbitControls
@@ -40,20 +39,25 @@ function Cat3DModel() {
 }
 
 export default function Cat() {
-  const camera = new Vector3();
-  camera.z = 10;
+  const position = new Vector3();
+  position.z = 10;
+  position.y = 250;
+
+  const rotation = new Euler();
+  rotation.x = 90;
+  rotation.y = 90;
+  rotation.z = 90;
 
   return (
     <Canvas
       style={{
-        position: "absolute",
-        bottom: "-30%",
-        width: "30%",
-        height: "80vh",
+        height: "100%",
+        maxHeight: "40vh",
+        width: "100%",
+
+        background: "red",
       }}
-      camera={{
-        position: camera,
-      }}
+      camera={{ position, rotation }}
     >
       <Cat3DModel />
     </Canvas>

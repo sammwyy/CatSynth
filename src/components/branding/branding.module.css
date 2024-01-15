@@ -1,0 +1,15 @@
+.title {
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 10px;
+}
+
+.subtitle {
+  font-size: 15px;
+  letter-spacing: 4px;
+}
+
+.title,
+.subtitle {
+  text-align: center;
+}

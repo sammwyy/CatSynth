@@ -3,32 +3,6 @@
   --player-height: 200px;
 }
 
-.player {
-  position: absolute;
-  width: var(--player-width);
-  height: var(--player-height);
-  left: calc(50% - var(--player-width) / 2);
-  top: calc(25% - var(--player-height) / 2);
-  border-radius: 14px;
-  z-index: 5;
-}
-
-.title {
-  text-transform: uppercase;
-  font-weight: bold;
-  letter-spacing: 10px;
-}
-
-.subtitle {
-  font-size: 15px;
-  letter-spacing: 4px;
-}
-
-.title,
-.subtitle {
-  text-align: center;
-}
-
 .btn {
   margin: auto;
   display: block;
@@ -38,5 +12,5 @@
   color: white;
   padding: 10px 20px;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 24px;
 }

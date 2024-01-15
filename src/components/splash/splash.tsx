@@ -1,20 +1,29 @@
+import { PropsWithChildren, useRef, useState } from "react";
+
 import { Button, Flex, Heading } from "@chakra-ui/react";
-import { useState } from "react";
 
-interface SplashProps {
-  onClick: () => void;
-}
-
-export default function Splash({ onClick }: SplashProps) {
+export function Splash({ children }: PropsWithChildren) {
+  const [ended, setEnded] = useState(false);
   const [pressed, setPressed] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   const handleClick = () => {
-    setPressed(true);
-    setTimeout(() => {
-      onClick();
-    }, 6000);
+    if (audioRef.current) {
+      const audio = audioRef.current;
+
+      setPressed(true);
+      audio.volume = 0.2;
+      audio.play();
+      audio.addEventListener("ended", () => {
+        setEnded(true);
+      });
+    }
   };
 
+  // If the audio has ended, we can render the children
+  if (ended) return <>{children}</>;
+
+  // If the audio has not ended, we can render the splash screen
   return (
     <Flex
       height={"100vh"}
@@ -39,7 +48,7 @@ export default function Splash({ onClick }: SplashProps) {
         </>
       )}
 
-      {pressed && <audio src="/boot.mp3" controls={false} autoPlay={true} />}
+      <audio src="/boot.mp3" controls={false} autoPlay={false} ref={audioRef} />
     </Flex>
   );
 }
