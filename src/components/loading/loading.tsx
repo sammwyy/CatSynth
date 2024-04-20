@@ -1,4 +1,4 @@
-import { Flex, Heading, Text } from "@chakra-ui/react";
+import { Flex, Heading, Link, Text } from "@chakra-ui/react";
 import { PropsWithChildren } from "react";
 
 interface LoadingProps extends PropsWithChildren {
@@ -39,6 +39,12 @@ export function Loading({
         <Text color={"red"} marginBottom={"20px"}>
           {error}
         </Text>
+      )}
+
+      {error && (
+        <Link href={"/?offline=1"} textDecoration={"underline"}>
+          Try offline mode
+        </Link>
       )}
     </Flex>
   );

@@ -7,6 +7,9 @@ import { getCDNPath } from "../../utils/constants.utils";
 import { DataContext } from "./data-context";
 
 export function DataProvider({ children }: PropsWithChildren) {
+  const query = new URLSearchParams(window.location.search);
+  const isOfflineMode = query.get("offline") === "1";
+
   const [fetched, setFetched] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
 
@@ -19,12 +22,14 @@ export function DataProvider({ children }: PropsWithChildren) {
   };
 
   const fetchData = async () => {
-    const res = await fetch(getCDNPath("data.json"));
-    const data = await res.json();
-    const soundfonts = data.soundfonts.map(fixItem);
-    const midis = data.midis.map(fixItem);
-    setSoundfonts(soundfonts);
-    setMidis(midis);
+    if (!isOfflineMode) {
+      const res = await fetch(getCDNPath("data.json"));
+      const data = await res.json();
+      const soundfonts = data.soundfonts.map(fixItem);
+      const midis = data.midis.map(fixItem);
+      setSoundfonts(soundfonts);
+      setMidis(midis);
+    }
     setFetched(true);
   };
 
